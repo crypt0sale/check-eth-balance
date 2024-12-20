@@ -2,6 +2,7 @@
 
 # RPC URLs for networks
 declare -A networks
+# These are public RPCs. You can put here your private RPCs (ie. Alchemy)
 networks=(
     ["Arbitrum Sepolia"]="https://arbitrum-sepolia-rpc.publicnode.com"
     ["Base Sepolia"]="https://sepolia.base.org"
@@ -15,7 +16,7 @@ wallets=(
     "0xwallet2"
 )
 
-# Function to fectch ETH balance
+# Function to fetch ETH balance
 get_eth_balance() {
     local rpc_url=$1
     local wallet_address=$2
