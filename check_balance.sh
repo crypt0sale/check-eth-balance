@@ -1,22 +1,21 @@
 #!/bin/bash
 
-# RPC URLs for networks
+# RPC URLa (public or private)
 declare -A networks
-# These are public RPCs. You can put here your private RPCs (ie. Alchemy)
 networks=(
-    ["Arbitrum Sepolia"]="https://arbitrum-sepolia-rpc.publicnode.com"
+    ["Arbitrum Sepolia"]="https://sepolia-rollup.arbitrum.io/rpc"
     ["Base Sepolia"]="https://sepolia.base.org"
     ["Blast Sepolia"]="https://sepolia.blast.io"
     ["Optimism Sepolia"]="https://sepolia.optimism.io"
 )
 
-# Wallet adresses
+# Wallet adrese
 wallets=(
     "0xwallet1"
     "0xwallet2"
 )
 
-# Function to fetch ETH balance
+# Get ETH balance function
 get_eth_balance() {
     local rpc_url=$1
     local wallet_address=$2
@@ -38,11 +37,20 @@ EOF
 
     if [[ -z "$balance_hex" || "$balance_hex" == "null" ]]; then
         echo "Error"
-    else
-        # Convert hex into decimal number (Wei -> ETH)
-        balance_dec=$(printf "%d" "$balance_hex")
-        echo "scale=18; $balance_dec / 1000000000000000000" | bc
+        return
     fi
+
+    # Convert hex into decimal number (Wei -> ETH)
+    # Use `printf` to properly convert large hex values to decimal
+    local balance_dec=$(printf "%d\n" "$balance_hex" 2>/dev/null || echo "Error")
+    if [[ "$balance_dec" == "Error" ]]; then
+        echo "Error"
+        return
+    fi
+
+    # Convert Wei to ETH
+    local balance_eth=$(echo "scale=18; $balance_dec / 1000000000000000000" | bc)
+    echo "$balance_eth"
 }
 
 # Format the table
@@ -53,7 +61,11 @@ for wallet in "${wallets[@]}"; do
     for network in "${!networks[@]}"; do
         rpc_url=${networks[$network]}
         balance=$(get_eth_balance "$rpc_url" "$wallet")
-        printf "%-44s %-20s %-15s\n" "$wallet" "$network" "$balance ETH"
+        if [[ "$balance" == "Error" ]]; then
+            printf "%-44s %-20s %-15s\n" "$wallet" "$network" "Error"
+        else
+            printf "%-44s %-20s %-15s\n" "$wallet" "$network" "$balance ETH"
+        fi
     done
     printf "%s\n" "------------------------------------------------------------------------------------------"
 done
