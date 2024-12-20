@@ -9,7 +9,7 @@ networks=(
     ["Optimism Sepolia"]="https://sepolia.optimism.io"
 )
 
-# Wallet adrese
+# Wallet adresses
 wallets=(
     "0xwallet1"
     "0xwallet2"
